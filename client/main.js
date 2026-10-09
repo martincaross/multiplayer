@@ -1,6 +1,8 @@
 /**
  * 2D Multiplayer Game Client - Pilla-Pilla
- * Mecánica de juego autoritativa con cazador (isIt) y corredores.
+ * - Interfaz limpia y optimizada para iPhone sin solapamientos.
+ * - Pantalla y campo de juego ampliados (~50% más grande y visible).
+ * - Cámara suave que sigue al jugador sin salirse de los límites de la arena.
  */
 
 class MultiplayerClient {
@@ -44,6 +46,12 @@ class MultiplayerClient {
         this.myColor = '#38bdf8';
         this.isIt = false;
 
+        // Cámara del juego (posicionada inicialmente en el centro)
+        this.camera = {
+            x: this.arena.width / 2,
+            y: this.arena.height / 2
+        };
+
         // Registro de jugadores conectados: Map<id, PlayerData>
         this.players = new Map();
 
@@ -56,7 +64,7 @@ class MultiplayerClient {
             pointerId: null,
             startX: 0,
             startY: 0,
-            maxRadius: 46,
+            maxRadius: 42,
             vx: 0,
             vy: 0
         };
@@ -129,17 +137,20 @@ class MultiplayerClient {
                 e.stopPropagation();
             }
 
+            // Restablecer zoom en Safari iOS de forma instantánea sin recargar
             const meta = document.querySelector('meta[name="viewport"]');
             if (meta) {
-                meta.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=10.0, user-scalable=yes');
+                meta.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover');
+                window.scrollTo(0, 0);
+
+                setTimeout(() => {
+                    meta.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover');
+                }, 250);
             }
 
-            window.scrollTo(0, 0);
-
-            setTimeout(() => {
-                const cleanUrl = window.location.origin + window.location.pathname + '?reset=' + Date.now();
-                window.location.replace(cleanUrl);
-            }, 80);
+            if (this.zoomWarningBanner) {
+                this.zoomWarningBanner.style.display = 'none';
+            }
         };
 
         if (this.resetZoomBtn) {
@@ -388,12 +399,10 @@ class MultiplayerClient {
             }
         }
 
-        // Actualizar contador del HUD
         if (this.playersVal) {
             this.playersVal.textContent = this.players.size;
         }
 
-        // Actualizar banner de rol Pilla-Pilla
         this.updateRoleBanner(amIHunter);
     }
 
@@ -402,23 +411,27 @@ class MultiplayerClient {
 
         if (amIHunter) {
             this.gameRoleBanner.className = 'game-role-banner hunter';
-            this.roleIcon.textContent = '🔥';
-            this.roleText.textContent = '¡LA LLEVAS TÚ! ¡ATRAPA A LOS DEMÁS!';
+            if (this.roleIcon) this.roleIcon.textContent = '🔥';
+            if (this.roleText) this.roleText.textContent = '¡LA LLEVAS TÚ! ¡ATRAPA!';
         } else {
             this.gameRoleBanner.className = 'game-role-banner runner';
-            this.roleIcon.textContent = '🏃';
-            this.roleText.textContent = '¡ESCAPA! ¡EL CAZADOR TE PERSIGUE!';
+            if (this.roleIcon) this.roleIcon.textContent = '🏃';
+            if (this.roleText) this.roleText.textContent = '¡ESCAPA DEL CAZADOR!';
         }
     }
 
     setConnectionState(isConnected) {
-        if (isConnected) {
-            this.statusPill.className = 'pill connected';
-            this.statusText.textContent = 'Conectado';
-        } else {
-            this.statusPill.className = 'pill disconnected';
-            this.statusText.textContent = 'Desconectado';
-            this.rttVal.textContent = '-- ms';
+        if (this.statusPill) {
+            if (isConnected) {
+                this.statusPill.classList.remove('disconnected');
+                this.statusPill.classList.add('connected');
+                if (this.statusText) this.statusText.textContent = 'Online';
+            } else {
+                this.statusPill.classList.remove('connected');
+                this.statusPill.classList.add('disconnected');
+                if (this.statusText) this.statusText.textContent = 'Offline';
+                if (this.rttVal) this.rttVal.textContent = '-- ms';
+            }
         }
     }
 
@@ -525,7 +538,9 @@ class MultiplayerClient {
 
         const localPlayer = this.players.get(this.myId);
         if (localPlayer && !isNaN(localPlayer.renderX) && !isNaN(localPlayer.renderY)) {
-            this.posVal.textContent = `${Math.round(localPlayer.renderX)}, ${Math.round(localPlayer.renderY)}`;
+            if (this.posVal) {
+                this.posVal.textContent = `${Math.round(localPlayer.renderX)}, ${Math.round(localPlayer.renderY)}`;
+            }
         }
     }
 
@@ -533,14 +548,14 @@ class MultiplayerClient {
         this.frameCount++;
         if (now - this.lastFpsUpdate >= 1000) {
             const currentFps = Math.round((this.frameCount * 1000) / (now - this.lastFpsUpdate));
-            this.fpsVal.textContent = currentFps;
+            this.fpsVal.textContent = `${currentFps} FPS`;
             this.frameCount = 0;
             this.lastFpsUpdate = now;
         }
     }
 
     /* -------------------------------------------------------------
-       5. RENDERIZADO: PILLA-PILLA VISUAL EN CANVAS
+       5. RENDERIZADO: PANTALLA MÁS GRANDE Y ENCUADRE ÓPTIMO
     ---------------------------------------------------------------- */
     render() {
         const ctx = this.ctx;
@@ -551,27 +566,66 @@ class MultiplayerClient {
         ctx.fillRect(0, 0, w, h);
 
         const isMobile = w < 768;
-        const padX = isMobile ? 18 : 36;
-        const padTop = isMobile ? 70 : 80;
-        const padBottom = isMobile ? 180 : 40;
 
-        const availW = w - padX * 2;
-        const availH = h - padTop - padBottom;
+        // =========================================================
+        // PANTALLA MÁS GRANDE: Zoom dinámico e inmersivo en iPhone
+        // =========================================================
+        let zoom;
+        if (isMobile) {
+            // En móvil: pantalla ampliada para llenar el viewport del teléfono
+            // Los personajes se ven grandes (~52px) y la acción es emocionante y nítida
+            const portraitFit = Math.max(w / 340, h / 680);
+            zoom = Math.min(Math.max(portraitFit, 1.22), 1.5);
+        } else {
+            // En PC / Monitor de escritorio: encuadre espacioso
+            const baseFit = Math.min((w - 40) / this.arena.width, (h - 100) / this.arena.height);
+            zoom = Math.min(Math.max(baseFit * 1.1, 0.9), 1.4);
+        }
 
-        const zoom = Math.min(availW / this.arena.width, availH / this.arena.height);
+        // Centro visual del canvas completo
+        const viewCenterX = w / 2;
+        const viewCenterY = h / 2;
 
-        const centerX = w / 2;
-        const centerY = isMobile ? padTop + (availH / 2) : h / 2;
+        // Campo de visión visible en coordenadas del mundo
+        const halfVisibleW = (w / 2) / zoom;
+        const halfVisibleH = (h / 2) / zoom;
+
+        // Seguimiento suave del jugador local
+        let targetCamX = this.arena.width / 2;
+        let targetCamY = this.arena.height / 2;
+
+        const localP = this.players.get(this.myId);
+        if (localP && !isNaN(localP.renderX) && !isNaN(localP.renderY)) {
+            targetCamX = localP.renderX;
+            targetCamY = localP.renderY;
+        }
+
+        // Delimitar la cámara para que nunca muestre espacio negro vacío fuera de la arena
+        if (this.arena.width > halfVisibleW * 2) {
+            targetCamX = Math.max(halfVisibleW, Math.min(this.arena.width - halfVisibleW, targetCamX));
+        } else {
+            targetCamX = this.arena.width / 2;
+        }
+
+        if (this.arena.height > halfVisibleH * 2) {
+            targetCamY = Math.max(halfVisibleH, Math.min(this.arena.height - halfVisibleH, targetCamY));
+        } else {
+            targetCamY = this.arena.height / 2;
+        }
+
+        // Lerp fluido de cámara a 60 FPS
+        this.camera.x += (targetCamX - this.camera.x) * 0.16;
+        this.camera.y += (targetCamY - this.camera.y) * 0.16;
 
         ctx.save();
-        ctx.translate(centerX, centerY);
+        ctx.translate(viewCenterX, viewCenterY);
         ctx.scale(zoom, zoom);
-        ctx.translate(-this.arena.width / 2, -this.arena.height / 2);
+        ctx.translate(-this.camera.x, -this.camera.y);
 
-        // 1. Dibujar Arena
+        // 1. Dibujar Arena de 800x600
         this.drawArena(ctx);
 
-        // 2. Dibujar Jugadores (Cazador en rojo brillante, corredores en neutro)
+        // 2. Dibujar Jugadores
         for (const p of this.players.values()) {
             const isLocal = p.id === this.myId;
             this.drawPlayer(ctx, p, isLocal);
@@ -643,10 +697,6 @@ class MultiplayerClient {
     drawPlayer(ctx, p, isLocal) {
         const radius = this.arena.playerRadius || 22;
         const isHunter = Boolean(p.isIt);
-
-        // Colores del Pilla-Pilla:
-        // Cazador (la lleva) = Rojo neón ardiente (#ef4444)
-        // Corredores = Azul neutro (#38bdf8 / #e0f2fe)
         const primaryColor = isHunter ? '#ef4444' : '#38bdf8';
         const px = Number(p.renderX) || 0;
         const py = Number(p.renderY) || 0;
@@ -654,7 +704,7 @@ class MultiplayerClient {
         ctx.save();
         ctx.translate(px, py);
 
-        // 1. Halo resplandeciente (pulsante para el cazador)
+        // 1. Halo resplandeciente
         const pulse = isHunter ? Math.sin(this.pulsePhase) * 3 : 0;
         ctx.beginPath();
         ctx.arc(0, 0, radius + 4 + pulse, 0, Math.PI * 2);
@@ -665,7 +715,7 @@ class MultiplayerClient {
         ctx.stroke();
         ctx.shadowBlur = 0;
 
-        // 2. Anillo blanco indicador exclusivo para el avatar local "TÚ"
+        // 2. Anillo blanco indicador para el avatar local "TÚ"
         if (isLocal) {
             ctx.beginPath();
             ctx.arc(0, 0, radius + 7 + pulse, 0, Math.PI * 2);
@@ -754,7 +804,7 @@ class MultiplayerClient {
         mctx.fillStyle = 'rgba(8, 12, 21, 0.9)';
         mctx.fillRect(0, 0, w, h);
 
-        const margin = 5;
+        const margin = 4;
         const mw = w - margin * 2;
         const mh = h - margin * 2;
 
@@ -784,7 +834,7 @@ class MultiplayerClient {
             const py = margin + ((p.renderY || 0) / this.arena.height) * mh;
 
             mctx.beginPath();
-            mctx.arc(px, py, isHunter ? 4.5 : (isLocal ? 3.5 : 2.5), 0, Math.PI * 2);
+            mctx.arc(px, py, isHunter ? 4 : (isLocal ? 3 : 2.2), 0, Math.PI * 2);
             mctx.fillStyle = isHunter ? '#ef4444' : '#38bdf8';
             mctx.shadowColor = mctx.fillStyle;
             mctx.shadowBlur = isHunter ? 8 : (isLocal ? 5 : 2);

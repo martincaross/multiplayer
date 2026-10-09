@@ -18,49 +18,47 @@
     <!-- Canvas HTML5 a pantalla completa -->
     <canvas id="game-canvas"></canvas>
 
-    <!-- Capa de interfaz de usuario (HUD) -->
+    <!-- Capa de interfaz de usuario (HUD) estructurada sin solapamientos -->
     <div id="ui-overlay">
-        <!-- Barra superior de estado -->
-        <header class="hud-top">
-            <div class="hud-left">
-                <div id="status-pill" class="pill disconnected">
-                    <span class="status-dot"></span>
-                    <span id="status-text">Desconectado</span>
+        <!-- Cabecera Superior: barra de estado + banner de rol apilados limpiamente -->
+        <header class="hud-header">
+            <div class="hud-bar">
+                <div class="hud-left">
+                    <div id="status-pill" class="pill status-metrics-pill connected">
+                        <span class="status-dot"></span>
+                        <span id="status-text" class="status-text-desktop">Online</span>
+                        <span class="metric-sep status-text-desktop">•</span>
+                        <span id="rtt-val" class="metric-item">-- ms</span>
+                        <span class="metric-sep">•</span>
+                        <span id="fps-val" class="metric-item">60 FPS</span>
+                        <span class="metric-sep">•</span>
+                        <span class="metric-item">👥 <span id="players-val">1</span></span>
+                    </div>
                 </div>
-                <div class="pill stat-pill">
-                    <span class="pill-label">RTT</span>
-                    <span id="rtt-val" class="pill-value">-- ms</span>
-                </div>
-                <div class="pill stat-pill">
-                    <span class="pill-label">FPS</span>
-                    <span id="fps-val" class="pill-value">60</span>
-                </div>
-                <div class="pill stat-pill">
-                    <span class="pill-label">SALAS</span>
-                    <span id="players-val" class="pill-value">1</span>
+
+                <div class="hud-right">
+                    <div class="pill pos-pill">
+                        <span class="pill-label">POS</span>
+                        <span id="pos-val" class="pill-value">0, 0</span>
+                    </div>
+                    <button id="reset-zoom-btn" class="pill reset-pill" type="button" title="Restablecer vista al 100%">
+                        <span>🔍 100%</span>
+                    </button>
                 </div>
             </div>
 
-            <div class="hud-right">
-                <div class="pill pos-pill">
-                    <span class="pill-label">POS</span>
-                    <span id="pos-val" class="pill-value">0, 0</span>
+            <!-- Fila del Banner de Rol: Nunca se pisa con los botones superiores -->
+            <div class="hud-banner-row">
+                <div id="game-role-banner" class="game-role-banner runner">
+                    <span id="role-icon">🏃</span>
+                    <span id="role-text">¡ESCAPA DEL CAZADOR!</span>
                 </div>
-                <button id="reset-zoom-btn" class="pill reset-pill" type="button" title="Restablecer vista a tamaño original 100%">
-                    <span>🔍 Reset 100%</span>
-                </button>
             </div>
         </header>
 
-        <!-- Banner de estado del Pilla-Pilla -->
-        <div id="game-role-banner" class="game-role-banner runner">
-            <span id="role-icon">🏃</span>
-            <span id="role-text">¡ESCAPA DEL CAZADOR!</span>
-        </div>
-
         <!-- Banner de aviso si Safari tiene zoom activado -->
         <div id="zoom-warning-banner" class="zoom-warning-banner" style="display: none;">
-            <span>Safari está ampliado con zoom. Pulsa aquí para restablecer a 100%.</span>
+            <span>Safari ampliado. Toca aquí para restablecer</span>
         </div>
 
         <!-- Indicador de controles de escritorio -->
@@ -70,7 +68,7 @@
 
         <!-- Radar / Minimapa en la esquina inferior derecha -->
         <div id="minimap-container" class="minimap-container">
-            <canvas id="minimap-canvas" width="90" height="90"></canvas>
+            <canvas id="minimap-canvas" width="76" height="76"></canvas>
         </div>
 
         <!-- Zona de joystick virtual táctil para móvil (Esquina inferior izquierda) -->
