@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#090d16">
+    <title>2D Multiplayer Arena - Pilla-Pilla</title>
+    <meta name="description" content="Juego multijugador Pilla-Pilla en tiempo real con servidor autoritativo.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Canvas HTML5 a pantalla completa -->
+    <canvas id="game-canvas"></canvas>
+
+    <!-- Capa de interfaz de usuario (HUD) -->
+    <div id="ui-overlay">
+        <!-- Barra superior de estado -->
+        <header class="hud-top">
+            <div class="hud-left">
+                <div id="status-pill" class="pill disconnected">
+                    <span class="status-dot"></span>
+                    <span id="status-text">Desconectado</span>
+                </div>
+                <div class="pill stat-pill">
+                    <span class="pill-label">RTT</span>
+                    <span id="rtt-val" class="pill-value">-- ms</span>
+                </div>
+                <div class="pill stat-pill">
+                    <span class="pill-label">FPS</span>
+                    <span id="fps-val" class="pill-value">60</span>
+                </div>
+                <div class="pill stat-pill">
+                    <span class="pill-label">SALAS</span>
+                    <span id="players-val" class="pill-value">1</span>
+                </div>
+            </div>
+
+            <div class="hud-right">
+                <div class="pill pos-pill">
+                    <span class="pill-label">POS</span>
+                    <span id="pos-val" class="pill-value">0, 0</span>
+                </div>
+                <button id="reset-zoom-btn" class="pill reset-pill" type="button" title="Restablecer vista a tamaño original 100%">
+                    <span>🔍 Reset 100%</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- Banner de estado del Pilla-Pilla -->
+        <div id="game-role-banner" class="game-role-banner runner">
+            <span id="role-icon">🏃</span>
+            <span id="role-text">¡ESCAPA DEL CAZADOR!</span>
+        </div>
+
+        <!-- Banner de aviso si Safari tiene zoom activado -->
+        <div id="zoom-warning-banner" class="zoom-warning-banner" style="display: none;">
+            <span>Safari está ampliado con zoom. Pulsa aquí para restablecer a 100%.</span>
+        </div>
+
+        <!-- Indicador de controles de escritorio -->
+        <div id="desktop-hint" class="desktop-hint">
+            <span>Usa <strong>WASD</strong> o <strong>Flechas</strong> para moverte</span>
+        </div>
+
+        <!-- Radar / Minimapa en la esquina inferior derecha -->
+        <div id="minimap-container" class="minimap-container">
+            <canvas id="minimap-canvas" width="90" height="90"></canvas>
+        </div>
+
+        <!-- Zona de joystick virtual táctil para móvil (Esquina inferior izquierda) -->
+        <div id="joystick-zone" class="joystick-zone">
+            <div id="joystick-base" class="joystick-base">
+                <div class="joystick-guide-x"></div>
+                <div class="joystick-guide-y"></div>
+                <div id="joystick-knob" class="joystick-knob"></div>
+            </div>
+            <span class="joystick-caption">CONTROL</span>
+        </div>
+    </div>
+
+    <script src="main.js"></script>
+</body>
+</html>

@@ -1,0 +1,11 @@
+{
+  "name": "multiplayer-server",
+  "version": "1.0.0",
+  "description": "Multiplayer Game Server",
+  "main": "server.js",
+  "type": "module",
+  "dependencies": {
+    "express": "^4.21.1",
+    "ws": "^8.18.0"
+  }
+}

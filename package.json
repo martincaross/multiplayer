@@ -1,0 +1,9 @@
+{
+  "name": "multiplayer-root",
+  "private": true,
+  "scripts": {
+    "install": "cd server && npm install",
+    "start": "node server/server.js",
+    "dev": "node server/server.js"
+  }
+}
