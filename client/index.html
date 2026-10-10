@@ -7,12 +7,12 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#090d16">
-    <title>2D Multiplayer Arena - Pilla-Pilla</title>
-    <meta name="description" content="Juego multijugador Pilla-Pilla en tiempo real con servidor autoritativo.">
+    <title>Pilla-Pilla Tron 1v1 - Cazador vs Corredor</title>
+    <meta name="description" content="Pilla-Pilla Tron 1v1 con servidor autoritativo, máquina de estados FSM, rol de Cazador y rastros neón.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css?v=2.2">
 </head>
 <body>
     <!-- Canvas HTML5 a pantalla completa -->
@@ -20,7 +20,7 @@
 
     <!-- Capa de interfaz de usuario (HUD) estructurada sin solapamientos -->
     <div id="ui-overlay">
-        <!-- Cabecera Superior: barra de estado + banner de rol apilados limpiamente -->
+        <!-- Cabecera Superior: barra de estado + marcador + banner de FSM apilados limpiamente -->
         <header class="hud-header">
             <div class="hud-bar">
                 <div class="hud-left">
@@ -36,22 +36,43 @@
                     </div>
                 </div>
 
+                <!-- Selector de Modo de Juego -->
+                <div id="mode-selector-pill" class="pill mode-selector-pill">
+                    <button id="mode-tron-btn" class="mode-tab-btn active" type="button">TRON 1v1</button>
+                    <button id="mode-pve-btn" class="mode-tab-btn" type="button">SUPERVIVENCIA</button>
+                </div>
+
+                <!-- Marcador de Rondas Tron 1v1 (Modo 1) -->
+                <div id="score-pill" class="pill score-pill" style="display: none;">
+                    <span id="p1-score-tag" class="score-tag p1">P1 <strong id="p1-score-val">0</strong></span>
+                    <span class="score-divider">VS</span>
+                    <span id="p2-score-tag" class="score-tag p2"><strong id="p2-score-val">0</strong> P2</span>
+                </div>
+
+                <!-- Métricas de Supervivencia PvE (Modo 2) -->
+                <div id="pve-stats-pill" class="pill pve-stats-pill" style="display: none;">
+                    <span class="pve-tag wave">OLEADA <strong id="pve-wave-val">1</strong></span>
+                    <span class="metric-sep">•</span>
+                    <span class="pve-tag score"><strong id="pve-score-val">0</strong> PTS</span>
+                    <span class="metric-sep">•</span>
+                    <span class="pve-tag enemies">DRONES <strong id="pve-enemies-val">0</strong></span>
+                    <span class="metric-sep">•</span>
+                    <span id="pve-bomb-tag" class="pve-tag bomb-pill"><span id="bomb-led-dot" class="bomb-led-dot"></span> <span id="pve-bomb-val">EMP: 20s</span></span>
+                    <span class="metric-sep">•</span>
+                    <span id="pve-dash-tag" class="pve-tag dash-pill"><span id="dash-led-dot" class="dash-led-dot active"></span> <span id="pve-dash-val">DASH [SHIFT]</span></span>
+                </div>
+
                 <div class="hud-right">
-                    <div class="pill pos-pill">
-                        <span class="pill-label">POS</span>
-                        <span id="pos-val" class="pill-value">0, 0</span>
-                    </div>
                     <button id="reset-zoom-btn" class="pill reset-pill" type="button" title="Restablecer vista al 100%">
-                        <span>🔍 100%</span>
+                        <span>100%</span>
                     </button>
                 </div>
             </div>
 
-            <!-- Fila del Banner de Rol: Nunca se pisa con los botones superiores -->
+            <!-- Fila del Banner de Estado de la FSM / Tron / PvE -->
             <div class="hud-banner-row">
-                <div id="game-role-banner" class="game-role-banner runner">
-                    <span id="role-icon">🏃</span>
-                    <span id="role-text">¡ESCAPA DEL CAZADOR!</span>
+                <div id="game-role-banner" class="game-role-banner lobby">
+                    <span id="role-text">ESPERANDO OPONENTE (1/2)...</span>
                 </div>
             </div>
         </header>
@@ -63,12 +84,7 @@
 
         <!-- Indicador de controles de escritorio -->
         <div id="desktop-hint" class="desktop-hint">
-            <span>Usa <strong>WASD</strong> o <strong>Flechas</strong> para moverte</span>
-        </div>
-
-        <!-- Radar / Minimapa en la esquina inferior derecha -->
-        <div id="minimap-container" class="minimap-container">
-            <canvas id="minimap-canvas" width="76" height="76"></canvas>
+            <span>Pilota con <strong>WASD</strong> • <strong>Shift</strong> Dash • Portales <strong>(10s)</strong> • Rescate <strong>2s</strong> • Corazones <strong>+1 Vida</strong></span>
         </div>
 
         <!-- Zona de joystick virtual táctil para móvil (Esquina inferior izquierda) -->
@@ -78,10 +94,36 @@
                 <div class="joystick-guide-y"></div>
                 <div id="joystick-knob" class="joystick-knob"></div>
             </div>
-            <span class="joystick-caption">CONTROL</span>
+            <span class="joystick-caption">DIRECCIÓN</span>
+        </div>
+
+        <!-- Botón táctil de Dash para móvil (Esquina inferior derecha) -->
+        <div id="dash-btn-zone" class="dash-btn-zone">
+            <button id="dash-btn" class="dash-btn ready" type="button" aria-label="Acelerón Dash">
+                <svg class="dash-cooldown-svg" viewBox="0 0 64 64">
+                    <circle class="dash-ring-track" cx="32" cy="32" r="28"></circle>
+                    <circle id="dash-ring-progress" class="dash-ring-progress" cx="32" cy="32" r="28"></circle>
+                </svg>
+                <div class="dash-btn-inner">
+                    <svg class="dash-bolt-icon" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+                        <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+                    </svg>
+                    <span id="dash-lbl" class="dash-lbl">DASH</span>
+                </div>
+            </button>
+        </div>
+
+        <!-- Modal de desconexión por inactividad (AFK 2 minutos) -->
+        <div id="afk-modal" class="afk-modal" style="display: none;">
+            <div class="afk-card">
+                <div class="afk-icon">⏳</div>
+                <h2 class="afk-title">Desconectado por inactividad</h2>
+                <p class="afk-desc">Has estado más de 2 minutos sin moverte para mantener la partida activa.</p>
+                <button id="afk-reconnect-btn" class="afk-btn" type="button">Volver a jugar</button>
+            </div>
         </div>
     </div>
 
-    <script src="main.js"></script>
+    <script src="main.js?v=2.3"></script>
 </body>
 </html>

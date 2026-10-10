@@ -202,24 +202,106 @@ html, body {
     animation: bannerDrop 0.25s ease-out;
 }
 
+/* Marcador Tron 1v1 */
+.score-pill {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.76rem;
+    font-weight: 700;
+    gap: 8px;
+    padding: 4px 12px;
+    background: rgba(10, 15, 28, 0.85);
+    border-color: rgba(0, 240, 255, 0.3);
+}
+
+.score-tag.p1 {
+    color: #00f0ff;
+    text-shadow: 0 0 10px rgba(0, 240, 255, 0.5);
+}
+
+.score-tag.p2 {
+    color: #f97316;
+    text-shadow: 0 0 10px rgba(249, 115, 22, 0.5);
+}
+
+.score-divider {
+    color: var(--text-muted);
+    font-size: 0.65rem;
+    letter-spacing: 0.05em;
+    opacity: 0.7;
+}
+
+/* Clases de estado FSM para el banner central */
+.game-role-banner.lobby {
+    background: rgba(245, 158, 11, 0.88);
+    border: 1.5px solid #fbbf24;
+    color: #0f172a;
+    box-shadow: 0 0 20px rgba(245, 158, 11, 0.45);
+}
+
+.game-role-banner.tron {
+    background: rgba(14, 165, 233, 0.88);
+    border: 1.5px solid rgba(56, 189, 248, 0.7);
+    color: #f8fafc;
+    box-shadow: 0 0 20px rgba(0, 240, 255, 0.4);
+}
+
 .game-role-banner.hunter {
-    background: rgba(239, 68, 68, 0.9);
-    border: 1.5px solid #f87171;
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.95), rgba(185, 28, 28, 0.95));
+    border: 1.5px solid #fca5a5;
     color: #ffffff;
-    box-shadow: 0 0 22px rgba(239, 68, 68, 0.65);
+    box-shadow: 0 0 25px rgba(239, 68, 68, 0.7);
     animation: hunterPulse 1.3s infinite ease-in-out;
 }
 
 .game-role-banner.runner {
-    background: rgba(14, 165, 233, 0.85);
-    border: 1.5px solid rgba(56, 189, 248, 0.7);
-    color: #f8fafc;
-    box-shadow: 0 0 15px rgba(14, 165, 233, 0.35);
+    background: linear-gradient(135deg, rgba(14, 165, 233, 0.95), rgba(2, 132, 199, 0.95));
+    border: 1.5px solid #7dd3fc;
+    color: #ffffff;
+    box-shadow: 0 0 25px rgba(0, 240, 255, 0.65);
+    animation: runnerPulse 1.3s infinite ease-in-out;
 }
 
 @keyframes hunterPulse {
     0%, 100% { transform: scale(1); box-shadow: 0 0 16px rgba(239, 68, 68, 0.5); }
-    50% { transform: scale(1.04); box-shadow: 0 0 28px rgba(239, 68, 68, 0.85); }
+    50% { transform: scale(1.03); box-shadow: 0 0 28px rgba(239, 68, 68, 0.85); }
+}
+
+@keyframes runnerPulse {
+    0%, 100% { transform: scale(1); box-shadow: 0 0 16px rgba(0, 240, 255, 0.5); }
+    50% { transform: scale(1.03); box-shadow: 0 0 28px rgba(0, 240, 255, 0.85); }
+}
+
+.game-role-banner.victory {
+    background: rgba(16, 185, 129, 0.92);
+    border: 1.5px solid #34d399;
+    color: #ffffff;
+    box-shadow: 0 0 25px rgba(16, 185, 129, 0.6);
+    animation: victoryPulse 1.2s infinite ease-in-out;
+}
+
+.game-role-banner.defeat {
+    background: rgba(239, 68, 68, 0.92);
+    border: 1.5px solid #f87171;
+    color: #ffffff;
+    box-shadow: 0 0 25px rgba(239, 68, 68, 0.65);
+    animation: defeatPulse 1s infinite ease-in-out;
+}
+
+.game-role-banner.draw {
+    background: rgba(168, 85, 247, 0.9);
+    border: 1.5px solid #c084fc;
+    color: #ffffff;
+    box-shadow: 0 0 20px rgba(168, 85, 247, 0.5);
+}
+
+@keyframes victoryPulse {
+    0%, 100% { transform: scale(1); box-shadow: 0 0 18px rgba(16, 185, 129, 0.5); }
+    50% { transform: scale(1.04); box-shadow: 0 0 32px rgba(16, 185, 129, 0.9); }
+}
+
+@keyframes defeatPulse {
+    0%, 100% { transform: scale(1); box-shadow: 0 0 18px rgba(239, 68, 68, 0.5); }
+    50% { transform: scale(1.04); box-shadow: 0 0 32px rgba(239, 68, 68, 0.9); }
 }
 
 @keyframes bannerDrop {
@@ -267,32 +349,6 @@ html, body {
 
 .desktop-hint strong {
     color: var(--primary-cyan);
-}
-
-/* Minimapa / Radar en esquina inferior derecha */
-.minimap-container {
-    position: absolute;
-    right: max(12px, env(safe-area-inset-right));
-    bottom: max(16px, calc(env(safe-area-inset-bottom) + 8px));
-    width: 78px;
-    height: 78px;
-    border-radius: 14px;
-    background: rgba(10, 15, 28, 0.85);
-    border: 1.5px solid var(--border-glass);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    padding: 1px;
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6);
-    pointer-events: none;
-    overflow: hidden;
-    z-index: 20;
-}
-
-#minimap-canvas {
-    width: 76px;
-    height: 76px;
-    border-radius: 12px;
-    display: block;
 }
 
 /* Joystick virtual en esquina inferior izquierda */
@@ -396,3 +452,332 @@ html, body {
         display: none !important;
     }
 }
+
+/* Modal de expulsión por inactividad (AFK 2 minutos) */
+.afk-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    height: 100dvh;
+    background: rgba(9, 13, 22, 0.88);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    pointer-events: auto;
+    animation: afkFadeIn 0.3s ease-out;
+}
+
+.afk-card {
+    background: rgba(15, 23, 42, 0.95);
+    border: 1.5px solid rgba(0, 240, 255, 0.4);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.7), 0 0 30px rgba(0, 240, 255, 0.2);
+    border-radius: 20px;
+    padding: 24px 28px;
+    text-align: center;
+    max-width: 320px;
+    width: 88%;
+}
+
+.afk-icon {
+    font-size: 2.4rem;
+    margin-bottom: 10px;
+}
+
+.afk-title {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #ffffff;
+    margin-bottom: 8px;
+}
+
+.afk-desc {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    line-height: 1.45;
+    margin-bottom: 20px;
+}
+
+.afk-btn {
+    width: 100%;
+    padding: 10px 20px;
+    border-radius: 9999px;
+    background: linear-gradient(135deg, #0284c7 0%, #00f0ff 100%);
+    border: none;
+    color: #ffffff;
+    font-family: inherit;
+    font-size: 0.88rem;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 4px 18px rgba(0, 240, 255, 0.4);
+    transition: transform 0.1s, box-shadow 0.15s;
+    outline: none;
+}
+
+.afk-btn:active {
+    transform: scale(0.97);
+}
+
+@keyframes afkFadeIn {
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+/* =========================================================================
+   SELECTOR DE MODO (TRON 1v1 vs PVE SUPERVIVENCIA)
+   ========================================================================= */
+.mode-selector-pill {
+    padding: 3px 5px;
+    gap: 4px;
+    background: rgba(13, 20, 36, 0.85);
+}
+
+.mode-tab-btn {
+    border: none;
+    outline: none;
+    background: transparent;
+    color: var(--text-muted);
+    font-family: inherit;
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 4px 9px;
+    border-radius: 9999px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.mode-tab-btn:hover {
+    color: #ffffff;
+}
+
+.mode-tab-btn.active {
+    background: rgba(0, 240, 255, 0.2);
+    color: #00f0ff;
+    box-shadow: 0 0 10px rgba(0, 240, 255, 0.35);
+}
+
+/* Métricas PvE Supervivencia */
+.pve-stats-pill {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.74rem;
+    font-weight: 700;
+    gap: 8px;
+    padding: 4px 12px;
+    background: rgba(10, 24, 20, 0.85);
+    border-color: rgba(16, 185, 129, 0.4);
+}
+
+.pve-tag.wave {
+    color: #34d399;
+}
+
+.pve-tag.score {
+    color: #fbbf24;
+}
+
+.pve-tag.enemies {
+    color: #f87171;
+}
+
+/* =========================================================================
+   INDICADOR TÁCTICO DE ORBE EMP
+   ========================================================================= */
+.pve-tag.bomb-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: #fbbf24;
+    transition: all 0.25s ease;
+}
+
+.bomb-led-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #64748b;
+    box-shadow: none;
+    transition: all 0.25s ease;
+}
+
+.pve-tag.bomb-pill.active {
+    color: #fef08a;
+    text-shadow: 0 0 10px rgba(251, 191, 36, 0.8);
+}
+
+.pve-tag.bomb-pill.active .bomb-led-dot {
+    background: #f59e0b;
+    box-shadow: 0 0 10px #f59e0b, 0 0 18px rgba(245, 158, 11, 0.9);
+    animation: empLedPulse 0.9s infinite alternate ease-in-out;
+}
+
+@keyframes empLedPulse {
+    from { transform: scale(0.9); opacity: 0.7; }
+    to { transform: scale(1.35); opacity: 1; }
+}
+
+/* Banners para PvE */
+.game-role-banner.pve {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.95), rgba(5, 150, 105, 0.95));
+    border: 1.5px solid #6ee7b7;
+    color: #ffffff;
+    box-shadow: 0 0 25px rgba(16, 185, 129, 0.65);
+}
+
+.game-role-banner.pve-gameover {
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.95), rgba(153, 27, 27, 0.95));
+    border: 1.5px solid #fca5a5;
+    color: #ffffff;
+    box-shadow: 0 0 25px rgba(239, 68, 68, 0.7);
+    animation: defeatPulse 1s infinite ease-in-out;
+}
+
+/* =========================================================================
+   INDICADOR HUD DE DASH & BOTÓN TÁCTIL MÓVIL
+   ========================================================================= */
+.pve-tag.dash-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: #38bdf8;
+    transition: all 0.25s ease;
+}
+
+.dash-led-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #64748b;
+    box-shadow: none;
+    transition: all 0.25s ease;
+}
+
+.pve-tag.dash-pill.ready {
+    color: #bae6fd;
+    text-shadow: 0 0 8px rgba(56, 189, 248, 0.8);
+}
+
+.pve-tag.dash-pill.ready .dash-led-dot {
+    background: #0ea5e9;
+    box-shadow: 0 0 10px #0ea5e9, 0 0 16px rgba(14, 165, 233, 0.9);
+    animation: dashLedPulse 1s infinite alternate ease-in-out;
+}
+
+@keyframes dashLedPulse {
+    from { transform: scale(0.9); opacity: 0.8; }
+    to { transform: scale(1.3); opacity: 1; }
+}
+
+/* Zona del botón flotante de Dash para móvil (Esquina inferior derecha) */
+.dash-btn-zone {
+    position: absolute;
+    bottom: max(24px, env(safe-area-inset-bottom));
+    right: max(20px, env(safe-area-inset-right));
+    z-index: 40;
+    pointer-events: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    touch-action: manipulation;
+}
+
+.dash-btn {
+    position: relative;
+    width: 66px;
+    height: 66px;
+    border-radius: 50%;
+    border: none;
+    outline: none;
+    background: rgba(15, 23, 42, 0.82);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.55), inset 0 0 12px rgba(56, 189, 248, 0.15);
+    cursor: pointer;
+    user-select: none;
+    -webkit-user-select: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    transition: transform 0.1s ease, box-shadow 0.2s ease;
+}
+
+.dash-btn:active {
+    transform: scale(0.92);
+}
+
+.dash-btn.ready {
+    box-shadow: 0 0 25px rgba(56, 189, 248, 0.45), inset 0 0 16px rgba(56, 189, 248, 0.25);
+    border: 1.5px solid rgba(56, 189, 248, 0.8);
+    animation: dashBtnGlow 1.4s infinite alternate ease-in-out;
+}
+
+@keyframes dashBtnGlow {
+    from { box-shadow: 0 0 14px rgba(56, 189, 248, 0.35); }
+    to { box-shadow: 0 0 28px rgba(56, 189, 248, 0.7); }
+}
+
+.dash-btn.cooldown {
+    border: 1.5px solid rgba(148, 163, 184, 0.25);
+    opacity: 0.85;
+}
+
+.dash-cooldown-svg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    transform: rotate(-90deg);
+    pointer-events: none;
+}
+
+.dash-ring-track {
+    fill: none;
+    stroke: rgba(255, 255, 255, 0.08);
+    stroke-width: 3.5;
+}
+
+.dash-ring-progress {
+    fill: none;
+    stroke: #38bdf8;
+    stroke-width: 3.5;
+    stroke-linecap: round;
+    stroke-dasharray: 176;
+    stroke-dashoffset: 0;
+    transition: stroke-dashoffset 0.1s linear;
+}
+
+.dash-btn-inner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1px;
+    pointer-events: none;
+}
+
+.dash-bolt-icon {
+    color: #38bdf8;
+    filter: drop-shadow(0 0 6px rgba(56, 189, 248, 0.7));
+    transition: color 0.2s, transform 0.1s;
+}
+
+.dash-btn.cooldown .dash-bolt-icon {
+    color: #64748b;
+    filter: none;
+}
+
+.dash-lbl {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.62rem;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    color: #ffffff;
+    opacity: 0.9;
+}
+
